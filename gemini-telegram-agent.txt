@@ -1,0 +1,449 @@
+{
+  "name": "Gemini помічник",
+  "nodes": [
+    {
+      "parameters": {
+        "modelName": "models/gemini-flash-latest",
+        "options": {
+          "temperature": "=0.7"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -160,
+        384
+      ],
+      "id": "11f337b1-b9cd-44ae-bfa5-0d0cd4366159",
+      "name": "Gemini Flash2",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Wq6yGFv8ZidflTRO",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+        "tableName": "n8n_chat_telegram",
+        "contextWindowLength": 100
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        144,
+        336
+      ],
+      "id": "e4d07e20-a1f0-4f2d-8e0c-77d990f65ddd",
+      "name": "Postgres Chat Memory",
+      "credentials": {
+        "postgres": {
+          "id": "2uTGcRFa7KBu6zoT",
+          "name": "Postgres account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "text": "={{ $json.output }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        672,
+        80
+      ],
+      "id": "30b66d22-66ec-4e13-b3c4-ed250672d9e7",
+      "name": "Send a text message",
+      "webhookId": "f6b76878-9244-4ed5-9773-da199328b152",
+      "credentials": {
+        "telegramApi": {
+          "id": "HtGxIZOBX1u4422H",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -768,
+        80
+      ],
+      "id": "e3e0b9b5-a71d-4d99-9d09-f077af0ef422",
+      "name": "Telegram Trigger",
+      "webhookId": "cba3d339-d6c9-4411-abd6-869f7faf1a86",
+      "credentials": {
+        "telegramApi": {
+          "id": "HtGxIZOBX1u4422H",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message.text }}, {{ $json.output[0].content[0].text }}",
+        "options": {
+          "systemMessage": "=Ти помічник та асистент для користувача. твоя задача допомагати знаходити рішення в яких користувач потребує.\nТи повинен при незрозумілих питаннях не давати постійно якусь відповідь, а краще запитати або уточнити наміри у користувача.\nПоки користувач не сказав прописати все чітко та детально, не розписуй велику кількість тексту. Пиши просто з поясненнями. якщо тобі скажуть распиши, то запитай як детально.\nЗавжди відповідай українською мовою.\nтакож тобі буде надходити опис скрншотів - це опис наданого зображення для аналізу. Бери його до уваги при знаходжені рішення.\n\nІнструкція для виводу тексту:\n\n1. Форматування:\n   - Всі відповіді повинні бути у форматі JSON.\n   - Не використовуйте спеціальні символи, такі як нові рядки або табуляції.\n   - Уникайте використання символів, які можуть викликати проблеми при обробці (наприклад, “, \\n, \\t).\n\n2. Структура:\n   - Відповіді повинні бути чітко структуровані.\n   - Всі елементи повинні бути в одному рядку або у форматі, що легко читається.\n\n3. Приклад Виводу:\n   - Виводьте текст у форматі: \n   \n   {\n     \"message\": \"Ваш текст тут.\"\n   }\n   \n4. Перевірка:\n   - Перед відправкою перевірте текст на наявність помилок форматування.\n   - Уникайте складних термінів і жаргону, щоб текст був зрозумілим.\n\n5. Тон і Стиль:\n   - Використовуйте зрозумілу та просту мову.\n   - Зосередьтеся на наданні корисної інформації без зайвих деталей.",
+          "passthroughBinaryImages": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        80,
+        80
+      ],
+      "id": "2bddc2ba-2183-4d51-b988-f91ba892cab4",
+      "name": "AI"
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ $json.message.photo[0].file_id }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -368,
+        176
+      ],
+      "id": "1f1b0d29-52b8-47f4-8160-056681e8bee4",
+      "name": "Get a file",
+      "webhookId": "9c7160b8-179b-45e5-88ec-44a1f7204f86",
+      "credentials": {
+        "telegramApi": {
+          "id": "HtGxIZOBX1u4422H",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.message.text }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "notEmpty",
+                      "singleValue": true
+                    },
+                    "id": "bed40900-4da7-494b-a404-e8a2c1bbfc9a"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "fb6f0db8-c534-4f1d-a069-6d57b0c27ecd",
+                    "leftValue": "",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        -592,
+        80
+      ],
+      "id": "0a5f15ea-6985-4db5-b1be-39e654c985ae",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2d084a5a-d688-4dbf-b845-1c5c9dfd1573",
+              "name": "message.text",
+              "value": "={{ $json.message.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -304,
+        -32
+      ],
+      "id": "da2e746f-42ee-4604-b6d8-ec814d5da8b5",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "text": "=ти повинен аналізувати зображення.\nнадай краткий опис зображення з описом.\nякщо є текст то обов'язково надай текст, окремим блоком, який міститься на зображені.\nце текст що разом з зображенням:  {{ $('Telegram Trigger').item.json.message.caption }}",
+        "inputType": "base64",
+        "simplify": false,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2,
+      "position": [
+        -224,
+        176
+      ],
+      "id": "1c57dddf-ea64-4c9a-937a-0153be6d22a4",
+      "name": "Analyze image",
+      "credentials": {
+        "openAiApi": {
+          "id": "bn4ZwXFQRefgf3YQ",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0e4f0443-bad1-408d-abd0-c5158f250490",
+              "name": "output",
+              "value": "={{ $json.output.replace(/(\\*\\*|\\*)/g, \"\") }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        432,
+        80
+      ],
+      "id": "53d255cc-6bce-4c01-98df-618848956981",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -80,
+        80
+      ],
+      "id": "b8ede59a-2fec-45b0-956b-c606047b43a6",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "builtInTools": {},
+        "options": {
+          "temperature": 0.5
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        336
+      ],
+      "id": "cee0673f-73f5-4e26-8dd2-3f39aada11a3",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "5Ji6o0jcgpyv2jHc",
+          "name": "OpenAi account"
+        }
+      }
+    }
+  ],
+    "connections": {
+    "Gemini Flash2": {
+      "ai_languageModel": [
+        []
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a file": {
+      "main": [
+        [
+          {
+            "node": "Analyze image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get a file",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze image": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "AI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "f5ffcc9f-95cc-4292-8767-41ff162faefc",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "id": "xRpdl6SgQkdvENxV",
+  "tags": []
+}
